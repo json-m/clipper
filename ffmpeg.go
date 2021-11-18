@@ -11,15 +11,15 @@ func ffmpegClip(startTime string, durationSec, qp int, inputFile, outputFile str
 	var err error
 
 	// start building ffmpeg args
-	args := []string{"-y",
+	args := []string{"-y", "-hide_banner", // yes to overwriting, hide the giant banner of supported things
 		"-ss", fmt.Sprintf("00:%s", startTime), // start timestamp
-		"-i", fmt.Sprintf("E:\\replays\\%s", inputFile), // input file
+		"-i", fmt.Sprintf("%s\\%s", cfg.InputFolder, inputFile), // input file
 		"-t", fmt.Sprintf("00:00:%d", durationSec), // length of clip
 		"-vcodec", "h264_nvenc", // nvidia encoder
-		"-s", "1280x720", // resolution to 720p
-		"-rc", "constqp", // tune for nvenc
-		"-qp", fmt.Sprintf("%d", qp), // tune for nvenc (basically CRF)
-	}
+		"-s", cfg.TargetResolution, // output resolution
+		"-rc", "constqp", // i know why constqp is *typically* bad, and in this specific case, i do not care
+		"-qp", fmt.Sprintf("%d", qp), // tune for nvenc constqp
+	} // https://archive.md/8YzUL - "Understanding Rate Control Modes (x264, x265, vpx)"
 
 	// if audio is desired set some opts for it. otherwise, drop the audio track
 	if audio {

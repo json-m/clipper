@@ -1,0 +1,6 @@
+inputFolder: "E:\\replays"
+outputFolder: "E:\\replays\\clipped"
+startQuality: 29
+targetResolution: "1280x720"
+targetFileSize: 8000000 # 8MB = non-nitro discord
+audio: false
