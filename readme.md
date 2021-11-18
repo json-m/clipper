@@ -1,6 +1,6 @@
 # clipper
 
-tiny cli for ffmpeg to clip replay buffer ("ShadowPlay" for OBS) recordings into short clips of a target size
+tiny cli for ffmpeg to trim **ReplayBuffer**/**ShadowPlay** recordings into short clips of a target size
 
 will check the output file's size and if larger than desired, will keep reducing quality by re-encoding
 
@@ -31,7 +31,7 @@ if you wish to specify a specific video file inside inputFolder for clipping, ch
 ### config opts
 
 * inputFolder - folder to search for input videos (**NO** trailing slash)
-* outputFolder - folder to output clips from ffmpeg to
+* outputFolder - folder to output clips from ffmpeg to (**NO** trailing slash)
 * startQuality - decides starting QP level (default: 29)
 * targetResolution - target output video res (default: 720p)
 * targetFileSize - target output file size in bits (default: 8MB)

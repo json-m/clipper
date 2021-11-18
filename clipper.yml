@@ -1,3 +1,4 @@
+# for windows, these paths must be double escaped
 inputFolder: "E:\\replays"
 outputFolder: "E:\\replays\\clipped"
 startQuality: 29

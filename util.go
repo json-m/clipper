@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 )
 
 // gets most recent file
@@ -20,7 +19,7 @@ func getRecentFile() string {
 	// get actual replays in directory
 	replays := []string{""}
 	for _, f := range files {
-		if strings.Contains(f.Name(), "Replay") {
+		if f.IsDir() == false {
 			replays = append(replays, f.Name())
 		}
 	}
@@ -41,7 +40,7 @@ func isFileTooBig(file string) bool {
 
 	// get size
 	size := f.Size()
-	if size >= cfg.TargetFileSize { // 8MB = non-nitro discord
+	if size >= cfg.TargetFileSize {
 		return true
 	}
 
