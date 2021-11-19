@@ -3,13 +3,14 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 )
 
 // gets most recent file
 // todo: change this from assuming ReadDir will list the most recent last to looking at creation timestamps, excluding directories
 func getRecentFile() string {
 	// get files in folder
-	files, err := os.ReadDir(cfg.InputFolder)
+	files, err := os.ReadDir(filepath.FromSlash(cfg.InputFolder))
 	if err != nil {
 		log.Fatal("problem getting most recent file:", err)
 	}

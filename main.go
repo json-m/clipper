@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -93,7 +94,7 @@ func main() {
 	}
 
 	// filename based on unixtime
-	outputFilename := fmt.Sprintf("%s\\%d.mp4", cfg.OutputFolder, time.Now().Unix())
+	outputFilename := fmt.Sprintf("%s\\%d.mp4", filepath.FromSlash(cfg.OutputFolder), time.Now().Unix())
 
 	// clip the video using ffmpeg
 	err := ffmpegClip(timeArg, *durationArg, cfg.StartQuality, inputFile, outputFilename, *audioArg)

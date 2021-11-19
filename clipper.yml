@@ -1,7 +1,20 @@
-# for windows, these paths must be double escaped
-inputFolder: "E:\\replays"
-outputFolder: "E:\\replays\\clipped"
+# folder with source video, no trailing slash
+inputFolder: "e:/replays"
+
+# folder for output video, no trailing slash
+outputFolder: "e:/replays/clipped"
+
+# constqp rate-control starting value
 startQuality: 29
+
+# output video resolution, highly recommended leaving at 720p
 targetResolution: "1280x720"
+
+# nvenc codec, i mostly use nvenc_h264 or nvenc_hevc. most things don't fully support hevc yet
+targetCodec: "nvenc_h264"
+
+# maximum output file size in bits
 targetFileSize: 8000000 # 8MB = non-nitro discord
+
+# include audio or not, can be overridden by `-aud` on cli
 audio: false
