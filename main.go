@@ -16,6 +16,7 @@ type Config struct {
 	OutputFolder     string `yaml:"outputFolder"`
 	StartQuality     int    `yaml:"startQuality"`
 	TargetResolution string `yaml:"targetResolution"`
+	TargetCodec      string `yaml:"targetCodec"`
 	TargetFileSize   int64  `yaml:"targetFileSize"`
 	Audio            bool   `yaml:"audio"`
 }
@@ -23,7 +24,18 @@ type Config struct {
 var cfg Config
 
 func init() {
-	// todo: does ffmpeg exist?
+	// test for ffmpeg
+	fInstalled, fCompatible := testFfmpeg()
+
+	// bail if ffmpeg isn't found/compatible
+	if !fInstalled || !fCompatible {
+		if !fInstalled {
+			log.Fatal("ffmpeg not found")
+		}
+		if !fCompatible {
+			log.Fatal("ffmpeg doesn't support nvenc")
+		}
+	}
 
 	// open config file
 	f, err := os.Open("clipper.yml")
@@ -52,9 +64,6 @@ func init() {
 }
 
 func main() {
-	// get most recent file
-	inputFile := getRecentFile()
-
 	// read flags
 	var timeArg string
 	var fileArg string
@@ -69,11 +78,17 @@ func main() {
 		log.Fatal(errors.New("syntax error: -time and -dur left empty"))
 	}
 
-	// if input file was specified, update inputFile
+	// set inputFile
+	var inputFile string
 	if fileArg != "" {
+		// does the desired input file even exist?
+		if _, err := os.Stat(fileArg); os.IsNotExist(err) {
+			log.Fatal("input file does not exist:", err)
+		}
 		inputFile = fileArg
 		log.Println("input file was specified:", inputFile)
 	} else {
+		inputFile = getRecentFile()
 		log.Println("most recent replay:", inputFile)
 	}
 
@@ -83,8 +98,7 @@ func main() {
 	// clip the video using ffmpeg
 	err := ffmpegClip(timeArg, *durationArg, cfg.StartQuality, inputFile, outputFilename, *audioArg)
 	if err != nil {
-		log.Println("problem calling ffmpegClip", err)
-		log.Fatal(err)
+		log.Fatal("problem calling ffmpegClip", err)
 	}
 
 	// check the output file size - if it's greater than desired, increase QP

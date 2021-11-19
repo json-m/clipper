@@ -5,17 +5,52 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strings"
 )
 
-func ffmpegClip(startTime string, durationSec, qp int, inputFile, outputFile string, audio bool) error {
-	var err error
+// check for ffmpeg
+func testFfmpeg() (bool, bool) {
+	var isInstalled bool
+	var hasNVIDIA bool
 
+	// tests that ffmpeg is even installed
+	pathTest := exec.Command("ffmpeg", "-L")
+	err := pathTest.Run()
+	if err != nil {
+		return false, false
+	}
+
+	// didn't get error while executing
+	isInstalled = true
+
+	// setup test for nvenc encoders
+	nvencTest := exec.Command("ffmpeg", "-hide_banner", "-encoders")
+
+	// run ffmpeg cmd and reformat output text
+	output, err := nvencTest.CombinedOutput()
+	if err != nil {
+		return false, false
+	}
+	out := strings.Split(string(output), "\n")
+
+	// check output for nvenc encoder
+	for _, line := range out {
+		if strings.Contains(line, "nvenc") {
+			hasNVIDIA = true
+			break
+		}
+	}
+
+	return isInstalled, hasNVIDIA
+}
+
+func ffmpegClip(startTime string, durationSec, qp int, inputFile, outputFile string, audio bool) error {
 	// start building ffmpeg args
 	args := []string{"-y", "-hide_banner", // yes to overwriting, hide the giant banner of supported things
 		"-ss", fmt.Sprintf("00:%s", startTime), // start timestamp
 		"-i", fmt.Sprintf("%s\\%s", cfg.InputFolder, inputFile), // input file
 		"-t", fmt.Sprintf("00:00:%d", durationSec), // length of clip
-		"-vcodec", "h264_nvenc", // nvidia encoder
+		"-vcodec", cfg.TargetCodec, // nvidia encoder
 		"-s", cfg.TargetResolution, // output resolution
 		"-rc", "constqp", // i know why constqp is *typically* bad, and in this specific case, i do not care
 		"-qp", fmt.Sprintf("%d", qp), // tune for nvenc constqp
@@ -36,18 +71,16 @@ func ffmpegClip(startTime string, durationSec, qp int, inputFile, outputFile str
 	runFfmpeg := exec.Command("ffmpeg", args...)
 
 	// setup for output
-	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	runFfmpeg.Stdout = &stdout
 	runFfmpeg.Stderr = &stderr
 
 	// now run ffmpeg
-	err = runFfmpeg.Run()
+	err := runFfmpeg.Run()
 	if err != nil {
 		log.Println("ffmpeg command was:", runFfmpeg.Args)
 		log.Println("failed to run", stderr.String())
-		log.Fatal(err)
+		return err
 	}
 
-	return err
+	return nil
 }

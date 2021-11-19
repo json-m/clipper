@@ -1,17 +1,15 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 )
 
 // gets most recent file
 // todo: change this from assuming ReadDir will list the most recent last to looking at creation timestamps, excluding directories
-// todo: "As of Go 1.16, os.ReadDir is a more efficient and correct choice" - https://pkg.go.dev/io/ioutil#ReadDir
 func getRecentFile() string {
 	// get files in folder
-	files, err := ioutil.ReadDir(cfg.InputFolder)
+	files, err := os.ReadDir(cfg.InputFolder)
 	if err != nil {
 		log.Fatal("problem getting most recent file:", err)
 	}
