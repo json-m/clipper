@@ -18,8 +18,9 @@ type Config struct {
 	StartQuality     int    `yaml:"startQuality"`
 	TargetResolution string `yaml:"targetResolution"`
 	TargetCodec      string `yaml:"targetCodec"`
-	TargetFileSize   int64  `yaml:"targetFileSize"`
-	Audio            bool   `yaml:"audio"`
+	TargetFileSize int64 `yaml:"targetFileSize"`
+	NoLimit        bool  `yaml:"skipLimit"`
+	Audio          bool  `yaml:"audio"`
 }
 
 var cfg Config
@@ -65,12 +66,14 @@ func init() {
 }
 
 func main() {
-	// read flags
 	var timeArg string
 	var fileArg string
+
+	// read flags
 	flag.StringVar(&timeArg, "time", "00:00", "-time=02:35")
 	durationArg := flag.Int("dur", 00, "-dur=12")
 	audioArg := flag.Bool("aud", cfg.Audio, "-aud=true")
+	noLimit := flag.Bool("nolimit", cfg.NoLimit, "-nolimit=true")
 	flag.StringVar(&fileArg, "file", "", "-file=replay.mkv")
 	flag.Parse()
 
@@ -83,7 +86,8 @@ func main() {
 	var inputFile string
 	if fileArg != "" {
 		// does the desired input file even exist?
-		if _, err := os.Stat(fileArg); os.IsNotExist(err) {
+		if _, err := os.Stat(filepath.FromSlash(fmt.Sprintf("%s/%s", cfg.InputFolder, fileArg))); os.IsNotExist(err) {
+			//if _, err := os.Stat(fileArg); os.IsNotExist(err) {
 			log.Fatal("input file does not exist:", err)
 		}
 		inputFile = fileArg
@@ -96,6 +100,11 @@ func main() {
 	// filename based on unixtime
 	outputFilename := fmt.Sprintf("%s\\%d.mp4", filepath.FromSlash(cfg.OutputFolder), time.Now().Unix())
 
+	// notify that the size limiter was disabled
+	if *noLimit == true {
+		log.Println("file size limit disabled")
+	}
+
 	// clip the video using ffmpeg
 	err := ffmpegClip(timeArg, *durationArg, cfg.StartQuality, inputFile, outputFilename, *audioArg)
 	if err != nil {
@@ -104,7 +113,7 @@ func main() {
 
 	// check the output file size - if it's greater than desired, increase QP
 	for {
-		if isFileTooBig(outputFilename) {
+		if isFileTooBig(outputFilename) && *noLimit == false {
 			cfg.StartQuality++
 			log.Println("file too big, increased QP:", cfg.StartQuality)
 			err := ffmpegClip(timeArg, *durationArg, cfg.StartQuality, inputFile, outputFilename, *audioArg)
@@ -113,7 +122,7 @@ func main() {
 				log.Fatal(err)
 			}
 		} else {
-			// file is smaller than specified limit
+			// file is smaller than specified limit, or the file size enforcement was turned off
 			break
 		}
 	}

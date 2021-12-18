@@ -5,13 +5,16 @@ inputFolder: "e:/replays"
 outputFolder: "e:/replays/clipped"
 
 # constqp rate-control starting value
-startQuality: 29
+startQuality: 31
 
 # output video resolution, highly recommended leaving at 720p
 targetResolution: "1280x720"
 
 # nvenc codec, i mostly use nvenc_h264 or nvenc_hevc. most things don't fully support hevc yet
 targetCodec: "nvenc_h264"
+
+# bypass size limit enforcement completely
+noLimit: false
 
 # maximum output file size in bits
 targetFileSize: 8000000 # 8MB = non-nitro discord
